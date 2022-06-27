@@ -9,6 +9,9 @@ var randOff = 1;
 var gameSpeed = 1;
 var fancyMode = true;
 
+var lastPageX = 0;
+var lastPageY = 0;
+
 var timeOfDay = 0;
 var dayLight = 0;
 var sunColor = {r:252,g:229,b:112};
@@ -17,6 +20,28 @@ var skyLight = {r:0,g:0,b:0};
 var sunlight = {r:0,g:0,b:0};
 
 function mainLoop() {
+    perlinCount = 0;
+    let win = window,
+        doc = document,
+        docElem = doc.documentElement,
+        body = doc.getElementsByTagName('body')[0],
+        x = win.innerWidth || docElem.clientWidth || body.clientWidth,
+        y = win.innerHeight || docElem.clientHeight || body.clientHeight;
+    if ((lastPageX !== 0 && lastPageX !== x) || (lastPageY !== 0 && lastPageY !== y)) {
+        scaleWindow();
+    }
+    /*
+    if (bigSide === 'y') {
+        if (x < canX*scaleFactor || x > canX*scaleFactor) {
+            scaleWindow();
+        }
+    }
+    else {
+        if (Math.floor(y/scaleFactor) < canY || Math.floor(y/scaleFactor) > canY) {
+            scaleWindow();
+        }
+    }*/
+
     if (fancyMode) {
         fps = 15;
         fogLayerAmt = 3;
@@ -25,9 +50,6 @@ function mainLoop() {
         fps = 15;
         fogLayerAmt = 1;
     }
-
-
-    scaleWindow();
     clearCanvas('black');
 
 
@@ -63,8 +85,13 @@ function mainLoop() {
 
     updateFrontWeather();
     drawSky();
-    drawRiver();
+    //drawRiver();
     drawBoat();
     drawFrontFog();
     //drawBackLayer();
+
+    lastPageX = x;
+    lastPageY = y;
+
+    console.log(perlinCount)
 }

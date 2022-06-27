@@ -35,6 +35,89 @@ var frontFogCtx = frontFogCan.getContext('2d');
 frontFogCtx.globalAlpha = 0.25;
 var frontFogColor = 0;
 
+var frontFogCanAmt = 0;
+var frontFogCanAmtTarget = 25;
+var frontFogDrawAmt = 50;
+
+var frontFogCanArr = new Array(frontFogCanAmtTarget);
+
+var frontFogPixelSize = 4;
+
+var frontFogCanSize = [600,300];
+
+var fogMode = 1;
+
+function drawFrontFog() {
+    let w = 3;
+    if (frontFogCanAmt < frontFogCanAmtTarget) {
+        console.log('drawing')
+        for (let i = frontFogCanAmt; i < frontFogCanAmtTarget; i++) {
+            //create canvas and context
+            newCanvas(('frontFogCan' + i + 1),'canvasStorage',frontFogCanSize[0],frontFogCanSize[1]);
+            frontFogCanArr[i] = {
+                can: document.getElementById('frontFogCan' + i + 1),
+                ctx: document.getElementById('frontFogCan' + i + 1).getContext('2d')
+            }
+
+            frontFogCanArr[i].ctx.globalAlpha = 0.25;
+            frontFogColor = [0,ImprovedNoise.noise(mainTimer/30,noiseSeed,xOff/100.76)/2+0.5,ImprovedNoise.noise(randOff,noiseSeed,xOff/45.8)/2+0.5];
+            //frontFogCtx.fillStyle = rgbToHex(Math.floor(lerp(25,255,frontFogColor)),255,255)
+            frontFogCanArr[i].ctx.fillStyle = rgbToHex(60,Math.floor(lerp(0,155,frontFogColor[1])),Math.floor(lerp(120,240,frontFogColor[2])));
+            //frontFogCanArr[i].ctx.fillStyle = 'white'
+
+
+            //draw each fog canvas
+            for (let j = 0; j < (frontFogCanSize[0]/frontFogPixelSize); j++) {
+                for (let k = 0; k < (frontFogCanSize[0]/frontFogPixelSize); k++) {+50
+                    //if (ImprovedNoise.noise(j/100+(xOff*frontWindDir/w)/200+w*30,k/8,mainTimer/(100/w)+w*30+noiseSeed) > 1.3 - j/(150/(w/2+1))) {
+                    if (ImprovedNoise.noise(j/100+(xOff*frontWindDir/3)/200,k/8,noiseSeed/3000*i) > Math.sqrt((j*frontFogPixelSize-frontFogCanSize[0]/2) ** 2 + (k*frontFogPixelSize-frontFogCanSize[1]/2) ** 2)/300) {
+                        frontFogCanArr[i].ctx.rect(Math.floor(j*frontFogPixelSize),Math.floor(k*frontFogPixelSize),Math.ceil(frontFogPixelSize),Math.ceil(frontFogPixelSize));
+                    }
+                }
+            }
+            frontFogCanArr[i].ctx.fill();
+        }
+        frontFogCanAmt = frontFogCanAmtTarget;
+    }
+    if (fogMode === 1) {
+        let frontFogStretch = 4;
+        for (let i = 0; i < frontFogDrawAmt; i++) {
+            let frontFogSpacing = ImprovedNoise.noise(noiseSeed/3000*i,mainTimer/40.7,938.3);
+            ctx.drawImage(frontFogCanArr[i%frontFogCanAmtTarget].can,(frontFogSpacing)*1920-frontFogCanSize[0]/2,320+Math.sin(frontFogSpacing*frontFogSpacing*Math.PI+i*noiseSeed/10000)*(frontFogSpacing/2+0.5)*40);
+        }
+        for (let i = 0; i < frontFogDrawAmt/2; i++) {
+            let frontFogSpacing = ImprovedNoise.noise(noiseSeed/3000*i,mainTimer/40.7,938.3);
+            ctx.drawImage(frontFogCanArr[i%frontFogCanAmtTarget].can,(frontFogSpacing)*(1920+300)-frontFogCanSize[0]/2*frontFogStretch,420+Math.sin(frontFogSpacing*frontFogSpacing*Math.PI+i*noiseSeed/10000)*(frontFogSpacing/2+0.5)*20,frontFogCanSize[0]*frontFogStretch,300);
+        }
+        ctx.globalAlpha = 1;
+    }
+    else if (fogMode === 2) {
+        let fogLayerAmt = 3;
+        let pixelSize = 4;
+        var frontFogDensity = limit(((ImprovedNoise.noise(mainTimer/17,noiseSeed,xOff/321)/4+0.1)+humidity-0.5)/2,0,1);
+        frontFogCtx.globalAlpha = frontFogDensity;
+        frontFogColor = [0,ImprovedNoise.noise(mainTimer/30,noiseSeed,xOff/100.76)/2+0.5,ImprovedNoise.noise(randOff,noiseSeed,xOff/45.8)/2+0.5];
+        //frontFogCtx.fillStyle = rgbToHex(Math.floor(lerp(25,255,frontFogColor)),255,255)
+        frontFogCtx.fillStyle = rgbToHex(60,Math.floor(lerp(0,155,frontFogColor[1])),Math.floor(lerp(120,240,frontFogColor[2])));
+        //frontFogCtx.fillStyle = 'lightgray'
+        frontFogCtx.clearRect(0,0,1920,400);
+        //frontFogDir = Math.sin(mainTimer/20);
+        for (let w = 2; w < fogLayerAmt+2; w++) {
+            frontFogCtx.beginPath();
+            for (let i = 0; i < 1920/pixelSize; i++) {
+                for (let j = 0; j < 400/pixelSize; j++) {
+                    if (ImprovedNoise.noise(i/100+(xOff*frontWindDir/w)/200+w*30,j/8,mainTimer/(100/w)+w*30+noiseSeed) > 1.3 - j/(150/(w/2+1))) {
+                        frontFogCtx.rect(Math.floor(i*pixelSize),Math.floor(j*pixelSize),Math.ceil(pixelSize),Math.ceil(pixelSize));
+                    }
+                }
+            }
+            frontFogCtx.fill();
+        }
+        ctx.drawImage(frontFogCan,0-canX/2,canY/2-400);
+    }
+}
+
+/*
 var fogLayerAmt = 3;
 
 function drawFrontFog() {
@@ -59,7 +142,7 @@ function drawFrontFog() {
         frontFogCtx.fill();
     }
     ctx.drawImage(frontFogCan,0-canX/2,canY/2-400);
-}
+}*/
 
 var starArr = new Array(500);
 
