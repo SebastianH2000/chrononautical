@@ -3,6 +3,7 @@ newCanvas('boatCan','canvasStorage',256,256);
 var boatCan = document.getElementById('boatCan');
 var boatCtx = boatCan.getContext('2d');
 
+var lightsOn = false;
 var boatLanternColor = {r:0,g:0,b:0};
 
 var boatStyle = 0;
@@ -38,8 +39,14 @@ function drawBoat() {
 
         //draw lantern flame
         let fireLerpAmt = ImprovedNoise.noise(mainTimer,noiseSeed/5720.43,95.3)/2+0.5;
-        boatLanternColor.r = lerp(150,200,fireLerpAmt);
-        boatLanternColor.g = lerp(0,150,fireLerpAmt);
+        if (timeOfDay > 0.85 || timeOfDay < 0.6) {
+            boatLanternColor.r = lerp(150,200,fireLerpAmt);
+            boatLanternColor.g = lerp(0,150,fireLerpAmt);
+        }
+        else {
+            boatLanternColor.r = 0;
+            boatLanternColor.g = 0;
+        }
         boatCtx.fillStyle = rgbToHex(boatLanternColor.r,boatLanternColor.g,0);
         boatCtx.fillRect(182.5,65,5,5);
         if (fancyMode) {

@@ -48,15 +48,15 @@ var frontFogCanSize = [600,300];
 var fogMode = 1;
 
 function drawFrontFog() {
+    //frontFogDrawAmt = frontHumidity*40;
     let w = 3;
     if (frontFogCanAmt < frontFogCanAmtTarget) {
-        console.log('drawing')
         for (let i = frontFogCanAmt; i < frontFogCanAmtTarget; i++) {
             //create canvas and context
-            newCanvas(('frontFogCan' + i + 1),'canvasStorage',frontFogCanSize[0],frontFogCanSize[1]);
+            newCanvas(('frontFogCan' + i),'canvasStorage',frontFogCanSize[0],frontFogCanSize[1]);
             frontFogCanArr[i] = {
-                can: document.getElementById('frontFogCan' + i + 1),
-                ctx: document.getElementById('frontFogCan' + i + 1).getContext('2d')
+                can: document.getElementById('frontFogCan' + i),
+                ctx: document.getElementById('frontFogCan' + i).getContext('2d')
             }
 
             frontFogCanArr[i].ctx.globalAlpha = 0.25;
@@ -81,17 +81,19 @@ function drawFrontFog() {
     }
     if (fogMode === 1) {
         let frontFogStretch = 4;
+        ctx.globalAlpha = limit(0.5 * frontHumidity,0,1);
         for (let i = 0; i < frontFogDrawAmt; i++) {
             let frontFogSpacing = ImprovedNoise.noise(noiseSeed/3000*i,mainTimer/40.7,938.3);
-            ctx.drawImage(frontFogCanArr[i%frontFogCanAmtTarget].can,(frontFogSpacing)*1920-frontFogCanSize[0]/2,320+Math.sin(frontFogSpacing*frontFogSpacing*Math.PI+i*noiseSeed/10000)*(frontFogSpacing/2+0.5)*40);
+            ctx.drawImage(frontFogCanArr[i%frontFogCanAmtTarget].can,Math.floor(((frontFogSpacing)*1920-frontFogCanSize[0]/2)/frontFogPixelSize)*frontFogPixelSize,Math.floor((320+Math.sin(frontFogSpacing*frontFogSpacing*Math.PI+i*noiseSeed/10000)*(frontFogSpacing/2+0.5)*40)/frontFogPixelSize)*frontFogPixelSize);
         }
+        ctx.globalAlpha = limit(1 * frontHumidity,0,1);
         for (let i = 0; i < frontFogDrawAmt/2; i++) {
             let frontFogSpacing = ImprovedNoise.noise(noiseSeed/3000*i,mainTimer/40.7,938.3);
-            ctx.drawImage(frontFogCanArr[i%frontFogCanAmtTarget].can,(frontFogSpacing)*(1920+300)-frontFogCanSize[0]/2*frontFogStretch,420+Math.sin(frontFogSpacing*frontFogSpacing*Math.PI+i*noiseSeed/10000)*(frontFogSpacing/2+0.5)*20,frontFogCanSize[0]*frontFogStretch,300);
+            ctx.drawImage(frontFogCanArr[i%frontFogCanAmtTarget].can,Math.floor(((frontFogSpacing)*(1920+300)-frontFogCanSize[0]/2*frontFogStretch)/frontFogPixelSize)*frontFogPixelSize,Math.floor((430+Math.sin(frontFogSpacing*frontFogSpacing*Math.PI+i*noiseSeed/10000)*(frontFogSpacing/2+0.5)*20,frontFogCanSize[0]*frontFogStretch,300)/frontFogPixelSize)*frontFogPixelSize);
         }
-        ctx.globalAlpha = 1;
     }
-    else if (fogMode === 2) {
+    ctx.globalAlpha = 1;
+    /*else if (fogMode === 2) {
         let fogLayerAmt = 3;
         let pixelSize = 4;
         var frontFogDensity = limit(((ImprovedNoise.noise(mainTimer/17,noiseSeed,xOff/321)/4+0.1)+humidity-0.5)/2,0,1);
@@ -114,7 +116,7 @@ function drawFrontFog() {
             frontFogCtx.fill();
         }
         ctx.drawImage(frontFogCan,0-canX/2,canY/2-400);
-    }
+    }*/
 }
 
 /*
@@ -193,15 +195,16 @@ function drawSky() {
         drawCircle((timeOfDay-0.5)*2020*2.5-50,300-Math.sin(((timeOfDay+0.5)%1)*Math.PI*2.5)*200,40,skyCtx);
     }
     else if (timeOfDay > 0 && timeOfDay < 0.4) {
-        skyCtx.fillStyle = 'silver'
+        skyCtx.fillStyle = 'silver';
         drawCircle(timeOfDay*2020*2.5-50,300-Math.sin(timeOfDay*Math.PI*2.5)*200,30,skyCtx);
     }
 
     //draw stars
-    skyCtx.globalAlpha = limit(1-dayLight-0.25,0,1);
+    skyCtx.globalAlpha = limit(0.75-dayLight,0,1);
+    skyCtx.fillStyle = rgbToHex(200,200,200);
     for (let i = 0; i < starArr.length; i++) {
         let orbitChange = starOrbitRadius+(heightVariation*starArr[i].yPos);
-        skyCtx.fillStyle = rgbToHex(255*starArr[i].brightness,255*starArr[i].brightness,255*starArr[i].brightness);
+        //skyCtx.fillStyle = rgbToHex(255*starArr[i].brightness,255*starArr[i].brightness,255*starArr[i].brightness);
         //drawCircle(Math.floor(limSin((starTime*starSpeed)*Math.PI*2+starArr[i].xPos)*orbitChange-orbitChange/3),Math.floor((0-limCos((starTime*starSpeed)*Math.PI*2+starArr[i].xPos))*orbitChange+(starOrbitRadius+300)),starArr[i].size*3,skyCtx);
         drawCircle(limSin((starTime*starSpeed)*Math.PI*2+starArr[i].xPos)*orbitChange-orbitChange/3,(0-limCos((starTime*starSpeed)*Math.PI*2+starArr[i].xPos))*orbitChange+(starOrbitRadius+300),starArr[i].size*3,skyCtx);
     }
@@ -219,4 +222,58 @@ function drawBackLayer() {
         backCtx.fillRect(i*pixelSize,500-currentHeight,pixelSize,currentHeight);
     }
     ctx.drawImage(backCan,0-canX/2,0-canY/2+180);
+}
+
+newCanvas('cloudCan','canvasStorage',1920,500);
+var cloudCan = document.getElementById('cloudCan');
+var cloudCtx = cloudCan.getContext('2d');
+
+var cloudCanAmt = 0;
+var cloudCanAmtTarget = 15;
+
+var cloudCanArr = new Array(cloudCanAmtTarget);
+
+var cloudCanSize = [600,300]
+
+var cloudDrawAmt = 20;
+
+var cloudPixelSize = 4;
+
+function drawClouds() {
+    //cloudDrawAmt = Math.floor(frontHumidity*10)
+    if (cloudCanAmt < cloudCanAmtTarget) {
+        console.log('heh')
+        for (let i = cloudCanAmt; i < cloudCanAmtTarget; i++) {
+            //create canvas and context
+            newCanvas(('cloudCan' + i),'canvasStorage',cloudCanSize[0],cloudCanSize[1]);
+            cloudCanArr[i] = {
+                can: document.getElementById('cloudCan' + i),
+                ctx: document.getElementById('cloudCan' + i).getContext('2d')
+            }
+
+            cloudCanArr[i].ctx.globalAlpha = 0.25;
+            //cloudColor = [0,ImprovedNoise.noise(mainTimer/30,noiseSeed,xOff/100.76)/2+0.5,ImprovedNoise.noise(randOff,noiseSeed,xOff/45.8)/2+0.5];
+            //cloudCanArr[i].ctx.fillStyle = rgbToHex(60,Math.floor(lerp(0,155,cloudColor[1])),Math.floor(lerp(120,240,cloudColor[2])));
+            cloudCanArr[i].ctx.fillStyle = 'white';
+
+
+            //draw each fog canvas
+            for (let j = 0; j < (cloudCanSize[0]/cloudPixelSize); j++) {
+                for (let k = 0; k < (cloudCanSize[0]/cloudPixelSize); k++) {+50
+                    //if (ImprovedNoise.noise(j/100+(xOff*frontWindDir/w)/200+w*30,k/8,mainTimer/(100/w)+w*30+noiseSeed) > 1.3 - j/(150/(w/2+1))) {
+                    if (ImprovedNoise.noise(j/100+(xOff*frontWindDir/3)/200,k/8,noiseSeed/3000*i) > Math.sqrt((j*cloudPixelSize-cloudCanSize[0]/2) ** 2 + (k*cloudPixelSize-cloudCanSize[1]/2) ** 2)/300) {
+                        cloudCanArr[i].ctx.rect(Math.floor(j*cloudPixelSize),Math.floor(k*cloudPixelSize),Math.ceil(cloudPixelSize),Math.ceil(cloudPixelSize));
+                    }
+                }
+            }
+            cloudCanArr[i].ctx.fill();
+        }
+        cloudCanAmt = cloudCanAmtTarget;
+    }
+    ctx.globalAlpha = limit(1.25 * frontHumidity,0,1);
+    for (let i = 0; i < cloudDrawAmt; i++) {
+        let cloudSpacing = ImprovedNoise.noise(noiseSeed/3000*i,mainTimer/900.7,938.3);
+        ctx.drawImage(cloudCanArr[i%cloudCanAmtTarget].can,Math.floor(((cloudSpacing)*1920-cloudCanSize[0]/2)/4)*4,Math.floor((-500+Math.sin(cloudSpacing*cloudSpacing*Math.PI+i*noiseSeed/10000)*(cloudSpacing/2+0.5)*300)/4)*4);
+    }
+    ctx.globalAlpha = 1;
 }

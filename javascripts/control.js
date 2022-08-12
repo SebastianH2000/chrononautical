@@ -62,13 +62,7 @@ var pressedLeft = false;
 var pressedRight = false;
 
 function mouseDown(val) {
-    if (fogMode === 1) {
-        fogMode = 2;
-    }
-    else {
-        fogMode = 1;
-    }
-    /*if (mouseY < 0) {
+    if (mouseY < 0) {
         scrubMode = !scrubMode;
     }
     if (mouseX < -480) {
@@ -82,18 +76,18 @@ function mouseDown(val) {
     }
     else if (val === 2) {
         mouseRIsDown = true;
-    }*/
+    }
 }
 
 function mouseUp(val) {
-    /*if (val === 0) {
+    if (val === 0) {
         mouseLIsDown = false;
     }
     else if (val === 2) {
         mouseRIsDown = false;
     }
     pressedLeft = false;
-    pressedRight = false;*/
+    pressedRight = false;
 }
 
 var mouseX = 0;

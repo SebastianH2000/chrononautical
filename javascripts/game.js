@@ -1,4 +1,4 @@
-var fps = 15;
+var fps = 50;
 var loaded = false;
 
 setInterval(mainLoop,1000/fps);
@@ -30,36 +30,24 @@ function mainLoop() {
     if ((lastPageX !== 0 && lastPageX !== x) || (lastPageY !== 0 && lastPageY !== y)) {
         scaleWindow();
     }
-    /*
-    if (bigSide === 'y') {
-        if (x < canX*scaleFactor || x > canX*scaleFactor) {
-            scaleWindow();
-        }
-    }
-    else {
-        if (Math.floor(y/scaleFactor) < canY || Math.floor(y/scaleFactor) > canY) {
-            scaleWindow();
-        }
-    }*/
 
     if (fancyMode) {
-        fps = 15;
         fogLayerAmt = 3;
     }
     else {
-        fps = 15;
         fogLayerAmt = 1;
     }
     clearCanvas('black');
 
 
 
+
     if (scrubMode) {
         if ((pressedRight || map[68] || map[39]) && !(pressedLeft || map[65] || map[37])) {
-            mainTimer += gameSpeed/fps*3;
+            mainTimer += gameSpeed/fps*25;
         }
         else if (!(pressedRight || map[68] || map[39]) && (pressedLeft || map[65] || map[37])) {
-            mainTimer -= gameSpeed/fps*3;
+            mainTimer -= gameSpeed/fps*5;
         }
     }
     else {
@@ -85,13 +73,12 @@ function mainLoop() {
 
     updateFrontWeather();
     drawSky();
-    //drawRiver();
+    drawClouds();
+    drawRiver();
     drawBoat();
     drawFrontFog();
     //drawBackLayer();
 
     lastPageX = x;
     lastPageY = y;
-
-    console.log(perlinCount)
 }
